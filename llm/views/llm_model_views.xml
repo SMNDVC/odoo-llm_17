@@ -12,7 +12,7 @@
             string="Fetch This Model Update"
             type="object"
             class="oe_highlight"
-            attrs="{'invisible': [('id', '=', False)]}"
+            invisible="not id"
             help="Fetch the latest information for this specific model from the provider."
           />
                 </header>
@@ -69,7 +69,7 @@
                 <field name="provider_id" />
                 <field name="model_use" />
                 <field name="default" />
-                <field name="active" invisible="1" />
+                <field name="active" column_invisible="1" />
             </tree>
         </field>
     </record>

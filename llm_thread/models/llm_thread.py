@@ -95,9 +95,8 @@ class RelatedRecordProxy:
 
 
 class LLMThread(models.Model):
-    _name = "llm.thread"
-    _description = "LLM Chat Thread"
-    _inherit = ["mail.thread"]
+    _inherit = "discuss.channel"
+    _description = "LLM-Enabled Chat Channel"
     _order = "write_date DESC"
 
     name = fields.Char(
@@ -185,7 +184,6 @@ class LLMThread(models.Model):
     # MESSAGE POST OVERRIDES - Clean integration with mail.thread
     # ============================================================================
 
-    @api.returns("mail.message", lambda value: value.id)
     def message_post(self, *, llm_role=None, message_type="comment", **kwargs):
         """Override to handle LLM-specific message types and metadata.
 

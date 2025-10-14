@@ -7,7 +7,7 @@ _logger = logging.getLogger(__name__)
 
 
 class LLMThread(models.Model):
-    _inherit = "llm.thread"
+    _inherit = "discuss.channel"
 
     assistant_id = fields.Many2one(
         "llm.assistant",

@@ -57,7 +57,7 @@
                         <page
               string="Training Jobs"
               name="jobs"
-              attrs="{'invisible': [('job_ids', '=', [])]}"
+              invisible="not job_ids"
             >
                             <field name="job_ids">
                                 <tree>
@@ -91,7 +91,7 @@
                 <field name="name" />
                 <field name="file_count" />
                 <field name="example_count" />
-                <field name="active" invisible="1" />
+                <field name="active" column_invisible="1" />
             </tree>
         </field>
     </record>

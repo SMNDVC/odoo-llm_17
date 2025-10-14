@@ -75,7 +75,7 @@
                             <div
                 class="alert alert-warning"
                 role="alert"
-                attrs="{'invisible': [('undefined_arguments', '=', False)]}"
+                invisible="not undefined_arguments"
               >
                                 <strong>Warning:
                                 </strong>
@@ -96,7 +96,7 @@
                             <div class="alert alert-info" role="alert">
                                 <h5>Template Format Guide:</h5>
                                 <div
-                  attrs="{'invisible': [('format', '!=', 'text')]}"
+                  invisible="format != 'text'"
                 >
                                     <p>
                                         <strong>Text Format:
@@ -108,7 +108,7 @@
                                     </pre>
                                 </div>
                                 <div
-                  attrs="{'invisible': [('format', '!=', 'yaml')]}"
+                  invisible="format != 'yaml'"
                 >
                                     <p>
                                         <strong>YAML Format:
@@ -125,7 +125,7 @@
                                     </pre>
                                 </div>
                                 <div
-                  attrs="{'invisible': [('format', '!=', 'json')]}"
+                  invisible="format != 'json'"
                 >
                                     <p>
                                         <strong>JSON Format:
@@ -238,7 +238,7 @@
                 <field name="argument_count" />
                 <field name="usage_count" />
                 <field name="last_used" />
-                <field name="active" invisible="1" />
+                <field name="active" column_invisible="1" />
             </tree>
         </field>
     </record>
