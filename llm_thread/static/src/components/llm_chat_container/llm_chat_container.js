@@ -15,8 +15,8 @@ export class LLMChatContainer extends Component {
       async () => {
         const { action } = this.props;
         const initActiveId =
-          (action.context && action.context.active_id) ||
-          (action.params && action.params.default_active_id) ||
+          (action.context && action.context.id) ||
+          (action.params && action.params.default_id) ||
           null;
 
         if (!this.messaging.llmChat) {

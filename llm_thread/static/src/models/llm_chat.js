@@ -64,7 +64,7 @@ registerModel({
       if (!this.llmChatView) {
         this.env.services.action.doAction("llm_thread.action_llm_chat", {
           name: this.env._t("Chat"),
-          active_id: this.threadToActiveId(thread),
+          id: this.threadToActiveId(thread),
           clearBreadcrumbs: false,
         });
       }

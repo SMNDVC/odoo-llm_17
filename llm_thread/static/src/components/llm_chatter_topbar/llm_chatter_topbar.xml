@@ -4,7 +4,6 @@
     t-name="llm_thread.ChatterTopbar"
     t-inherit="mail.ChatterTopbar"
     t-inherit-mode="extension"
-    owl="1"
   >
         <!-- Insert AI button after the Schedule Activity button -->
         <xpath

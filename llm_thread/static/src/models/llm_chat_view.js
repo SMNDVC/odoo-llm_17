@@ -20,7 +20,7 @@ registerModel({
     _onLLMChatActiveThreadChanged() {
       this.env.services.router.pushState({
         action: this.llmChat.llmChatView.actionId,
-        active_id: this.llmChat.activeId,
+        id: this.llmChat.activeId,
       });
     },
   },
