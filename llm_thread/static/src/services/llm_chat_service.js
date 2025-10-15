@@ -20,7 +20,6 @@ export const THREAD_SEARCH_FIELDS = [
     "model",
     "res_id",
     "tool_ids",
-    "prompt_id",
 ];
 
 /**

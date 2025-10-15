@@ -5,7 +5,7 @@ import { clear } from "@mail/model/model_field_command";
 import { registerPatch } from "@mail/model/model_core";
 
 // Define assistant-related fields to fetch from server
-const ASSISTANT_THREAD_FIELDS = ["assistant_id"];
+const ASSISTANT_THREAD_FIELDS = ["assistant_id", "prompt_id"];
 
 /**
  * Patch the LLMChat model to add assistants

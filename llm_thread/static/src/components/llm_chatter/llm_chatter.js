@@ -1,0 +1,270 @@
+/** @odoo-module **/
+
+import { patch } from "@web/core/utils/patch";
+import { Chatter } from "@mail/core/web/chatter";
+import { useState, Component, useRef } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
+import { _t } from "@web/core/l10n/translation";
+import { LLMChatThread } from "../llm_chat_thread/llm_chat_thread";
+
+/**
+ * Patch the Chatter component to add LLM chat integration
+ * 
+ * This allows users to switch between normal chatter and AI chat
+ * directly from the form view chatter using template-based approach.
+ */
+patch(Chatter.prototype, {
+    /**
+     * @override
+     */
+    setup() {
+        super.setup();
+
+        // Services
+        this.llmChatService = useService("llm_chat");
+        this.notificationService = useService("notification");
+        this.actionService = useService("action");
+        this.userService = useService("user");
+
+        // Extend state with LLM chat properties
+        Object.assign(this.state, {
+            isChattingWithLLM: false,
+            llmThread: null,
+            isInitializingLLM: false,
+        });
+
+        // Listen for chatter refresh events from LLM message actions
+        this.env.bus.addEventListener("chatter:refresh", this._onChatterRefreshRequested.bind(this));
+    },
+
+    /**
+     * Handle chatter refresh requests from LLM message actions
+     */
+    _onChatterRefreshRequested(event) {
+        const { model, res_id } = event.detail;
+        const currentRecord = this.getThreadInfo();
+
+        // Only refresh if this chatter is for the same record
+        if (currentRecord.model === model && currentRecord.id === res_id) {
+            // Trigger a refresh of the chatter messages
+            if (this.state.llmThread) {
+                this.state.llmThread.fetchData();
+            }
+        }
+    },
+
+
+
+    /**
+     * Toggle between normal chatter and LLM chat mode
+     */
+    async toggleLLMChat() {
+
+        const recordInfo = this.getThreadInfo();
+
+        if (!recordInfo.model || !recordInfo.id) {
+            console.warn("[LLM] No valid record information available");
+            this.notificationService.add(
+                _t("Unable to start AI chat - no record context found"),
+                {
+                    title: _t("Error"),
+                    type: "warning",
+                }
+            );
+            return;
+        }
+
+        if (this.state.isChattingWithLLM) {
+            this.exitLLMMode();
+        } else {
+            await this.enterLLMMode(recordInfo);
+        }
+    },
+
+    /**
+     * Get Mail thread information from various sources
+     */
+    getThreadInfo() {
+        // Try multiple ways to get record information from Chatter
+        const thread = this.state.thread;
+
+        // Initialize with undefined
+        let recordModel = undefined;
+        let recordId = undefined;
+
+        // First, try to get from chatter's thread data (this is the record context)
+        if (thread) {
+            // For mail threads, model/res_id contain the record information
+            recordModel = thread.model;
+            recordId = thread.res_id;
+        }
+
+        // If still not found, try to get from chatter props directly
+        if (!recordModel || !recordId) {
+            recordModel = this.props?.threadModel;
+            recordId = this.props?.threadId;
+        }
+
+        // Try to get from action context if still not found
+        if (!recordModel || !recordId) {
+            const action = this.actionService.currentController?.action;
+
+            if (action?.res_model && action?.res_id) {
+                recordModel = action.res_model;
+                recordId = action.res_id;
+            }
+        }
+
+        // Try to get from URL or environment
+        if (!recordModel || !recordId) {
+            // Try to get from browser URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlModel = urlParams.get('model');
+            const urlId = urlParams.get('id');
+
+            if (urlModel && urlId) {
+                recordModel = urlModel;
+                recordId = parseInt(urlId);
+            }
+        }
+
+
+        return {
+            model: recordModel,
+            id: recordId,
+            mailThread: thread
+        };
+    },
+
+    /**
+     * Enter LLM chat mode
+     */
+    async enterLLMMode(recordInfo) {
+
+        if (this.state.isInitializingLLM) return;
+
+        this.state.isInitializingLLM = true;
+
+        try {
+            const llmChat = this.llmChatService;
+
+            const llmThread = await llmChat.ensureThread({
+                model: recordInfo.model,
+                res_id: recordInfo.id,
+            });
+
+            if (!llmThread) {
+                throw new Error("Failed to create LLMThread");
+            }
+
+            await llmChat.selectThread(llmThread.id);
+
+            // Update state - this will trigger template re-render
+            this.state.llmThread = llmThread;
+            this.state.isChattingWithLLM = true;
+
+
+        } catch (error) {
+            console.error("[LLM] Failed to initialize LLM chat:", error);
+            this.notificationService.add(
+                _t("Failed to start AI chat: ") + error.message,
+                {
+                    title: _t("Error"),
+                    type: "danger",
+                }
+            );
+            this.state.isChattingWithLLM = false;
+            this.state.llmThread = null;
+        } finally {
+            this.state.isInitializingLLM = false;
+        }
+    },
+
+    /**
+     * Exit LLM chat mode
+     */
+    exitLLMMode() {
+
+        // Reset state - this will trigger template re-render
+        this.state.isChattingWithLLM = false;
+        this.state.llmThread = null;
+        this.state.isInitializingLLM = false;
+    },
+
+    /**
+     * Send LLM message using the chat service
+     * This is called from the LLMChatThread component
+     */
+    async sendLLMMessage(message) {
+
+        if (!this.state.llmThread) {
+            console.error("[LLM] No LLMthread available");
+            this.notificationService.add(
+                _t("No AI chat session available"),
+                {
+                    title: _t("Error"),
+                    type: "warning",
+                }
+            );
+            return;
+        }
+
+        try {
+            const llmChat = this.llmChatService;
+
+            // Send the message using the chat service
+            await llmChat.sendMessage(this.state.llmThread.id, message);
+
+
+        } catch (error) {
+            console.error("[LLM] Failed to send message:", error);
+            this.notificationService.add(
+                _t("Failed to send message: ") + error.message,
+                {
+                    title: _t("Error"),
+                    type: "danger",
+                }
+            );
+        }
+    },
+
+    /**
+     * Override click handlers to exit LLM mode when using normal chatter features
+     */
+    onClickSendMessage(ev) {
+        if (this.state.isChattingWithLLM) {
+            this.toggleLLMChat();
+        }
+        super.onClickSendMessage(ev);
+    },
+
+    onClickLogNote(ev) {
+        if (this.state.isChattingWithLLM) {
+            this.toggleLLMChat();
+        }
+        super.onClickLogNote(ev);
+    },
+
+    onClickScheduleActivity(ev) {
+        if (this.state.isChattingWithLLM) {
+            this.toggleLLMChat();
+        }
+        super.onClickScheduleActivity(ev);
+    },
+
+    onClickAttachFiles(ev) {
+        if (this.state.isChattingWithLLM) {
+            this.toggleLLMChat();
+        }
+        super.onClickAttachFiles(ev);
+    },
+});
+
+// Add LLMChatThread to Chatter's components
+patch(Chatter, {
+    components: {
+        ...Chatter.components,
+        LLMChatThread,
+    },
+});
+
