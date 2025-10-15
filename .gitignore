@@ -1,0 +1,112 @@
+# --- Python bytecode and caches ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Odoo runtime and log files ---
+*.log
+*.pid
+*.seed
+*.zip
+*.tar.gz
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# --- Odoo-specific caches ---
+# Session, assets, and compiled templates
+.odoo/
+.odoo_session/
+.odoo_cache/
+.odoo-addons/
+.cache/
+.cache_dir/
+assets/
+tmp/
+filestore/
+sessions/
+addons/*/__pycache__/
+
+# --- Odoo build / packaging ---
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+.eggs/
+develop-eggs/
+parts/
+sdist/
+downloads/
+wheels/
+lib/
+lib64/
+
+# --- Configuration and local environment ---
+*.local.yml
+*.local.env
+.env
+.venv/
+venv/
+ENV/
+*.conf.bak
+*.conf.old
+
+# --- IDEs and editors ---
+.vscode/
+.idea/
+.spyproject/
+*.sublime-project
+*.sublime-workspace
+
+# --- Docker / Compose ---
+*.pid
+*.log
+docker-data/
+docker/volumes/
+*.db
+*.sock
+
+# --- Coverage and testing ---
+.tox/
+.nox/
+.coverage
+.coverage.*
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# --- Documentation ---
+docs/_build/
+doc/_build/
+*.mo
+*.pot
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# --- PyInstaller / Build artifacts ---
+*.spec
+MANIFEST
+
+# --- Cython debug symbols ---
+cython_debug/
+
+# --- pyenv / Poetry / Pipenv ---
+.python-version
+Pipfile.lock
+poetry.lock
+__pypackages__/
+
+# --- mypy / pytype / pyre ---
+.mypy_cache/
+.dmypy.json
+.pytype/
+.pyre/
